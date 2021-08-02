@@ -9,7 +9,7 @@
 			</uni-forms-item>
 			<uni-forms-item name="description" label="应用描述" required>
 				<textarea auto-height style="box-sizing: content-box;" @input="binddata('description', $event.detail.value)" class="uni-textarea-border"
-					:value.sync="formData.description"></textarea>
+					:value="formData.description" @update:value="val => formData.description = val"></textarea>
 			</uni-forms-item>
 			<view class="uni-button-group">
 				<button type="primary" class="uni-button" style="width: 100px;" @click="submit">提交</button>
@@ -69,6 +69,7 @@
 					mask: true
 				})
 				this.$refs.form.submit().then((res) => {
+					debugger
 					this.submitForm(res)
 				}).catch((errors) => {
 					uni.hideLoading()

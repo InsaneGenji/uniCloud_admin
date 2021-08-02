@@ -23,7 +23,7 @@
 				</view>
 				<textarea v-else auto-height style="box-sizing: content-box;" :disabled="detailsState"
 					@input="binddata('description', $event.detail.value)" class="uni-textarea-border"
-					:value.sync="formData.description"></textarea>
+					:value="formData.description" @update:value="val => formData.description = val"></textarea>
 			</uni-forms-item>
 			<uni-forms-item name="create_date" label="创建时间">
 				<uni-dateformat format="yyyy-MM-dd hh:mm:ss" :date="formData.create_date" :threshold="[0, 0]" />

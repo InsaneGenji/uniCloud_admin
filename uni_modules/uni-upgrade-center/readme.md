@@ -39,6 +39,8 @@ uniCloud 是 DCloud 联合阿里云、腾讯云，为开发者提供的基于 se
 
 2. 使用已有`uniCloud-admin`项目或新建项目：`打开HBuilderX` -> `文件` -> `新建` -> `项目` -> `uni-app` 选择 `uniCloud admin`模板，键入一个名字，确定
 
+3. 鼠标右键选择`关联云服务空间`和`运行云服务空间初始化向导`
+
 3. 在插件市场打开本插件页面，在右侧点击`使用 HBuilderX 导入插件`，选择 `uniCloud admin` 项目点击确定
 
 4. 等待下载安装完毕。由于本插件依赖一些uni-ui插件，下载完成后会显示合并插件页面，自行选择即可
@@ -108,6 +110,11 @@ uniCloud 是 DCloud 联合阿里云、腾讯云，为开发者提供的基于 se
 </div>
 
 12. 由于插件依赖的uni-ui的一些组件，建议右键`/uni_modules/uni-upgrade-center`安装一下第三方依赖，否则可能会出现一些问题
+
+13. 运行在`uniCloud`，由于本插件使用了`clientDB`，因此可能需要配置一下`uni-config-center插件`关于`uni-id`的配置信息。如提示`公用模块uni-id缺少配置信息`请这样做：
+	1. 点击[uni-config-center](https://ext.dcloud.net.cn/plugin?id=4425)导入插件
+	2. 在`/uniCloud/cloudfunctions/common/uni-config-center/`下创建`uni-id`文件夹，文件夹内创建`config.json`文件。
+	3. 点击[config.json默认配置](https://uniapp.dcloud.net.cn/uniCloud/uni-id?id=start)。将内容拷贝至`config.json`中。**注：一定要把注释去除！**
 
 ## 使用指南
 

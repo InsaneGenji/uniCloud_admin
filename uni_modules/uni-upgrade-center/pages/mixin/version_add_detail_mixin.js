@@ -22,7 +22,7 @@ export const fields =
 export default {
 	data() {
 		return {
-			enableiOSWgt: true,	// 是否开启iOS的wgt更新
+			enableiOSWgt: false,	// 是否开启iOS的wgt更新
 			silentlyContent: '静默更新：App升级时会在后台下载wgt包并自行安装。新功能在下次启动App时生效',
 			mandatoryContent: '强制更新：App升级弹出框不可取消',
 			stablePublishContent: '同时只可有一个线上发行版，线上发行不可更设为下线。\n未上线可以设为上线发行并自动替换当前线上发行版',

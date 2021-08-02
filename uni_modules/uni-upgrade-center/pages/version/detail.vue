@@ -24,7 +24,7 @@
 			<uni-forms-item name="contents" label="更新内容" required>
 				<textarea auto-height style="box-sizing: content-box;" :disabled="detailsState"
 					@input="binddata('contents', $event.detail.value)" class="uni-textarea-border"
-					:value.sync="formData.contents"></textarea>
+					:value="formData.contents" @update:value="val => formData.contents = val"></textarea>
 			</uni-forms-item>
 			<uni-forms-item name="platform" label="平台" required>
 				<uni-data-checkbox :disabled="true" :multiple="true" v-model="formData.platform"
@@ -47,7 +47,7 @@
 					style="padding-left: 20px;color: #a8a8a8;">{{Number(appFileList.size / 1024 / 1024).toFixed(2)}}M</text>
 			</uni-forms-item>
 			<uni-forms-item name="url" :label="isiOS ? 'AppStore' : '包地址'" required>
-				<uni-easyinput :disabled="detailsState" placeholder="可下载安装包地址" v-model="formData.url" />
+				<uni-easyinput :disabled="detailsState" placeholder="可下载安装包地址" v-model="formData.url" :maxlength="-1"/>
 				<show-info :top="-80" :content="uploadFileContent"></show-info>
 			</uni-forms-item>
 			<uni-forms-item v-if="isWGT" name="is_silently" label="静默更新">

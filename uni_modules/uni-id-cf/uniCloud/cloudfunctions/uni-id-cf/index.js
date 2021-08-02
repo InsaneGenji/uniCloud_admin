@@ -7,6 +7,7 @@ const uniIdConfig = createConfig({
 }).config()
 const db = uniCloud.database()
 const dbCmd = db.command
+const usersDB = db.collection('uni-id-users')
 exports.main = async (event, context) => {
 	//UNI_WYQ:这里的uniID换成新的，保证多人访问不会冲突
 	uniID = uniID.createInstance({
@@ -60,9 +61,9 @@ exports.main = async (event, context) => {
 		}
 		params.uid = payload.uid
 	}
-	
+
 	//禁止前台用户传递角色
-	if (action.slice(0,7) == "loginBy") {
+	if (action.slice(0, 7) == "loginBy") {
 		if (params.role) {
 			return {
 				code: 403,
@@ -74,8 +75,11 @@ exports.main = async (event, context) => {
 	//3.注册成功后创建新用户的积分表方法
 	async function registerSuccess(uid) {
 		//用户接受邀请
-		if(inviteCode){
-			await uniID.acceptInvite({inviteCode,uid});
+		if (inviteCode) {
+			await uniID.acceptInvite({
+				inviteCode,
+				uid
+			});
 		}
 		//添加当前用户设备信息
 		await db.collection('uni-id-device').add({
@@ -114,6 +118,10 @@ exports.main = async (event, context) => {
 			await registerSuccess(res.uid)
 		} else {
 			if (Object.keys(deviceInfo).length) {
+				console.log(979797, {
+					deviceInfo,
+					user_id: res
+				});
 				//更新当前用户设备信息
 				await db.collection('uni-id-device').where({
 					user_id: res.uid
@@ -125,7 +133,7 @@ exports.main = async (event, context) => {
 
 	let res = {}
 	switch (action) { //根据action的值执行对应的操作
-		case 'bind_mobile_by_univerify':
+		case 'bindMobileByUniverify':
 			let {
 				appid, apiKey, apiSecret
 			} = uniIdConfig.service.univerify
@@ -145,7 +153,7 @@ exports.main = async (event, context) => {
 				res.mobile = univerifyRes.phoneNumber
 			}
 			break;
-		case 'bind_mobile_by_sms':
+		case 'bindMobileBySms':
 			// console.log({
 			// 	uid: params.uid,
 			// 	mobile: params.mobile,
@@ -159,7 +167,9 @@ exports.main = async (event, context) => {
 			// console.log(res);
 			break;
 		case 'register':
-			var {username, password, nickname} = params
+			var {
+				username, password, nickname
+			} = params
 			if (/^1\d{10}$/.test(username)) {
 				return {
 					code: 401,
@@ -172,7 +182,12 @@ exports.main = async (event, context) => {
 					msg: '用户名不能是邮箱'
 				}
 			}
-			res = await uniID.register({username, password, nickname,inviteCode});
+			res = await uniID.register({
+				username,
+				password,
+				nickname,
+				inviteCode
+			});
 			if (res.code === 0) {
 				await registerSuccess(res.uid)
 			}
@@ -212,9 +227,8 @@ exports.main = async (event, context) => {
 					...params,
 					queryField: ['username', 'email', 'mobile']
 				});
-				if (res.code === 0) {
-					await loginLog(res);
-				}
+				res.type = 'login'
+				await loginLog(res);
 				needCaptcha = await getNeedCaptcha();
 			}
 
@@ -244,12 +258,14 @@ exports.main = async (event, context) => {
 			res = await uniID.logout(uniIdToken)
 			break;
 		case 'sendSmsCode':
-			// 测试期间短信统一用 123456 正式项目删除即可
-			return uniID.setVerifyCode({
-				mobile: params.mobile,
-				code: '123456',
-				type: params.type
-			})
+			/* -开始- 测试期间，为节约资源。统一虚拟短信验证码为： 123456；开启以下代码块即可  */
+			// return uniID.setVerifyCode({
+			// 	mobile: params.mobile,
+			// 	code: '123456',
+			// 	type: params.type
+			// })
+			/* -结束- */
+
 			// 简单限制一下客户端调用频率
 			const ipLimit = await db.collection('opendb-verify-codes').where({
 				ip: context.CLIENTIP,
@@ -306,6 +322,7 @@ exports.main = async (event, context) => {
 					msg: '手机号码填写错误'
 				}
 			}
+			params.type = 'login'
 			let loginBySmsRes = await uniID.loginBySms(params)
 			// console.log(loginBySmsRes);
 			if (loginBySmsRes.code === 0) {
@@ -351,10 +368,11 @@ exports.main = async (event, context) => {
 			}
 			break;
 
-			// -----------  admin api  -----------
-		case 'registerAdmin':
+			// =========================== admin api start =========================
+		case 'registerAdmin': {
 			var {
-				username, password
+				username,
+				password
 			} = params
 			let {
 				total
@@ -367,45 +385,118 @@ exports.main = async (event, context) => {
 					message: '超级管理员已存在，请登录...'
 				}
 			}
-			return uniID.register({
+			const appid = params.appid
+			const appName = params.appName
+			delete params.appid
+			delete params.appName
+			res = await uniID.register({
 				username,
 				password,
 				role: ["admin"]
 			})
-			break;
-		case 'registerUser':
-			const {
-				userInfo
-			} = await uniID.getUserInfo({
-				uid: params.uid
-			})
-			if (userInfo.role.indexOf('admin') === -1 && params.role.indexOf('admin') > -1) {
-				res = {
-					code: 403,
-					message: '非法访问, 无权限注册超级管理员',
+			if (res.code === 0) {
+				const app = await db.collection('opendb-app-list').where({
+					appid
+				}).count()
+				if (!app.total) {
+					await db.collection('opendb-app-list').add({
+						appid,
+						name: appName,
+						description: "admin 管理后台",
+						create_date: Date.now()
+					})
 				}
-			} else {
-				res = await uniID.register({
-					...params
-				})
-				if (res.code === 0) {
-					delete res.token
-					delete res.tokenExpired
-				}
+
 			}
-			break;
-		case 'getCurrentUserInfo':
-			res = uniID.getUserInfo({
-				uid: params.uid,
-				...params
-			})
-			break;
-		default:
+		}
+		break;
+	case 'registerUser':
+		const {
+			userInfo
+		} = await uniID.getUserInfo({
+			uid: params.uid
+		})
+		if (userInfo.role.indexOf('admin') === -1) {
 			res = {
 				code: 403,
-				msg: '非法访问'
+				message: '非法访问, 无权限注册超级管理员',
 			}
-			break;
+		} else {
+			// 过滤 dcloud_appid，注册用户成功后再提交
+			const dcloudAppidList = params.dcloud_appid
+			delete params.dcloud_appid
+			res = await uniID.register({
+				autoSetDcloudAppid: false,
+				...params
+			})
+			if (res.code === 0) {
+				delete res.token
+				delete res.tokenExpired
+				await uniID.setAuthorizedAppLogin({
+					uid: res.uid,
+					dcloudAppidList
+				})
+			}
+		}
+		break;
+	case 'updateUser': {
+		const {
+			userInfo
+		} = await uniID.getUserInfo({
+			uid: params.uid
+		})
+		if (userInfo.role.indexOf('admin') === -1) {
+			res = {
+				code: 403,
+				message: '非法访问, 无权限注册超级管理员',
+			}
+		} else {
+			// 过滤 dcloud_appid，注册用户成功后再提交
+			const dcloudAppidList = params.dcloud_appid
+			delete params.dcloud_appid
+
+			// 过滤 password，注册用户成功后再提交
+			const password = params.password
+			delete params.password
+
+			// 过滤 uid、id
+			const id = params.id
+			delete params.id
+			delete params.uid
+
+
+			res = await uniID.updateUser({
+				uid: id,
+				...params
+			})
+			if (res.code === 0) {
+				if (password) {
+					await uniID.resetPwd({
+						uid: id,
+						password
+					})
+				}
+				await uniID.setAuthorizedAppLogin({
+					uid: id,
+					dcloudAppidList
+				})
+			}
+		}
+		break;
+	}
+	case 'getCurrentUserInfo':
+		res = await uniID.getUserInfo({
+			uid: params.uid,
+			...params
+		})
+		break;
+		// =========================== admin api end =========================
+	default:
+		res = {
+			code: 403,
+			msg: '非法访问'
+		}
+		break;
 	}
 	//返回数据给客户端
 	return res
