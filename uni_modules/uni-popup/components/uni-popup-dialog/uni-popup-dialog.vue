@@ -50,7 +50,6 @@
 	export default {
 		name: "uniPopupDialog",
 		mixins: [popup],
-		emits:['confirm','close'],
 		props: {
 			value: {
 				type: [String, Number],

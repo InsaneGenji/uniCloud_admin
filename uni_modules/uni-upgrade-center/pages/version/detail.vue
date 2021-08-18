@@ -37,7 +37,7 @@
 				<uni-easyinput :disabled="detailsState" placeholder="原生App最低版本" v-model="formData.min_uni_version" />
 				<show-info :content="minUniVersionContent"></show-info>
 			</uni-forms-item>
-			<uni-forms-item v-if="!isiOS && !detailsState" name="dirty_data" label="上传包">
+			<uni-forms-item v-if="!isiOS && !detailsState" label="上传包">
 				<uni-file-picker v-model="appFileList" :file-extname="fileExtname" :disabled="hasPackage"
 					returnType="object" file-mediatype="all" limit="1" @success="packageUploadSuccess"
 					@delete="packageDelete">
@@ -47,7 +47,7 @@
 					style="padding-left: 20px;color: #a8a8a8;">{{Number(appFileList.size / 1024 / 1024).toFixed(2)}}M</text>
 			</uni-forms-item>
 			<uni-forms-item name="url" :label="isiOS ? 'AppStore' : '包地址'" required>
-				<uni-easyinput :disabled="detailsState" placeholder="可下载安装包地址" v-model="formData.url" :maxlength="-1"/>
+				<uni-easyinput :disabled="detailsState" placeholder="可下载安装包地址" v-model="formData.url" :maxlength="-1" />
 				<show-info :top="-80" :content="uploadFileContent"></show-info>
 			</uni-forms-item>
 			<uni-forms-item v-if="isWGT" name="is_silently" label="静默更新">
@@ -66,7 +66,7 @@
 				<show-info v-if="isStable" :top="-100" :content="stablePublishContent"></show-info>
 				<show-info v-else :top="-40" :content="stablePublishContent2"></show-info>
 			</uni-forms-item>
-			<uni-forms-item name="create_date" label="上传时间">
+			<uni-forms-item label="上传时间">
 				<uni-dateformat format="yyyy-MM-dd hh:mm:ss" :date="formData.create_date" :threshold="[0, 0]" />
 			</uni-forms-item>
 			<uni-forms-item v-show="false" name="type" label="安装包类型">
@@ -151,8 +151,7 @@
 				uni.showLoading({
 					mask: true
 				})
-				this.$refs.form.submit().then((res) => {
-					delete res.dirty_data
+				this.$refs.form.validate().then((res) => {
 					this.submitForm(res)
 				}).catch((errors) => {
 					uni.hideLoading()
@@ -246,7 +245,8 @@
 					where.platform = this.formData.platform[0]
 				}
 				const latestStableData = await db.collection(dbCollectionName).where(where).get()
-				return latestStableData.result.data.find(item => item.platform.toString() === this.formData.platform.toString());
+				return latestStableData.result.data.find(item => item.platform.toString() === this.formData.platform
+					.toString());
 			},
 			cancelEdit() {
 				let content = '';

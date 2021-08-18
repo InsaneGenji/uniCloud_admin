@@ -17,7 +17,7 @@ function getValidator(fields) {
 }
 
 export const fields =
-	'appid,name,title,contents,platform,type,version,min_uni_version,url,stable_publish,is_silently,is_mandatory'
+	'appid,name,title,contents,platform,type,version,min_uni_version,url,stable_publish,is_silently,is_mandatory,create_date'
 
 export default {
 	data() {

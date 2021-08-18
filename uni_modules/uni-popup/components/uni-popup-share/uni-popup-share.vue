@@ -21,7 +21,6 @@
 	export default {
 		name: 'UniPopupShare',
 		mixins:[popup],
-		emits:['select'],
 		props: {
 			title: {
 				type: String,

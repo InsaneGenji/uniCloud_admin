@@ -23,7 +23,6 @@ import { createAnimation } from './createAnimation'
  */
 export default {
 	name: 'uniTransition',
-	emits:['click','change'],
 	props: {
 		show: {
 			type: Boolean,

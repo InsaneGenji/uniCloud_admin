@@ -68,8 +68,7 @@
 				uni.showLoading({
 					mask: true
 				})
-				this.$refs.form.submit().then((res) => {
-					debugger
+				this.$refs.form.validate().then((res) => {
 					this.submitForm(res)
 				}).catch((errors) => {
 					uni.hideLoading()
